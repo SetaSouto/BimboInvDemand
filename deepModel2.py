@@ -18,15 +18,18 @@ valid_size = 10000
 test_size = 20000
 
 # How many steps to do to train the model
-num_steps = 2000
+num_steps = 4000
 
 train_dataset, train_output, valid_dataset, valid_output, test_dataset, test_output = data.getRandomDatasets(nExamples, train_size, valid_size, test_size)
 
 # How many features has our charasteristic vector
 features = train_dataset.shape[1]
-hidden_nodes1 = 256
-hidden_nodes2 = 128
-alpha = 0.0000005
+hidden_nodes1 = 32
+hidden_nodes2 = 16
+alpha = 0.0000001
+beta1 = 0.001
+beta2 = 0.001
+beta3 = 0.001
 
 graph = tf.Graph()
 
@@ -76,7 +79,7 @@ with graph.as_default():
     #-------
     # Loss
     #-------
-    loss = tf.nn.l2_loss( output - tf_train_outputs)
+    loss = tf.nn.l2_loss( output - tf_train_outputs) + beta1*tf.nn.l2_loss(weights1) + beta2*tf.nn.l2_loss(weights2) + beta3*tf.nn.l2_loss(weights3)
 
     #-----------
     # Optimizer
@@ -87,10 +90,10 @@ with graph.as_default():
     # Predictions for the training, validation, and test data.
     train_prediction = output
     valid_prediction = tf.nn.relu( tf.matmul(
-                                        (tf.matmul( tf.nn.tanh( tf.matmul(tf_valid_dataset, weights1) + biases1 ),
-                                                   weights2) + biases2),
+                                        tf.nn.tanh((tf.matmul( tf.nn.tanh( tf.matmul(tf_valid_dataset, weights1) + biases1 ),
+                                                   weights2) + biases2)),
                                         weights3) + biases3)
-    test_prediction = tf.nn.relu( tf.matmul( (tf.matmul(tf.nn.tanh( tf.matmul(tf_test_dataset, weights1) + biases1 ) , weights2) + biases2),
+    test_prediction = tf.nn.relu( tf.matmul( tf.nn.tanh((tf.matmul(tf.nn.tanh( tf.matmul(tf_test_dataset, weights1) + biases1 ) , weights2) + biases2)),
                                               weights3) + biases3)
 
 # Run the model
