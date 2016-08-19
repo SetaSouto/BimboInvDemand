@@ -12,7 +12,7 @@ def accuracy(predictions, real_outputs):
 def accuracy2(predictions, real_outputs):
     return np.sqrt( np.mean( np.square( np.log(predictions+1) - np.log(real_outputs+1))))
 
-nExamples = 10000000
+nExamples = 20000000
 train_size = 1000000
 valid_size = 10000
 test_size = 20000
