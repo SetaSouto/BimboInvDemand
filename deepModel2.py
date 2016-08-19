@@ -26,7 +26,7 @@ train_dataset, train_output, valid_dataset, valid_output, test_dataset, test_out
 features = train_dataset.shape[1]
 hidden_nodes1 = 32
 hidden_nodes2 = 16
-alpha = 0.0000001
+alpha = 0.0001
 beta1 = 0.001
 beta2 = 0.001
 beta3 = 0.001
@@ -79,7 +79,7 @@ with graph.as_default():
     #-------
     # Loss
     #-------
-    loss = tf.nn.l2_loss( output - tf_train_outputs) + beta1*tf.nn.l2_loss(weights1) + beta2*tf.nn.l2_loss(weights2) + beta3*tf.nn.l2_loss(weights3)
+    loss = tf.nn.l2_loss( tf.log(output+1) - tf.log(tf_train_outputs+1) ) + beta1*tf.nn.l2_loss(weights1) + beta2*tf.nn.l2_loss(weights2) + beta3*tf.nn.l2_loss(weights3)
 
     #-----------
     # Optimizer
@@ -118,3 +118,8 @@ with tf.Session(graph=graph) as session:
             begin = time.time()
 
     print('Test accuracy:', accuracy2(test_prediction.eval(), test_output))
+    
+    # Let's print some results: predictions vs real
+    print('-----------')
+    print('Prediction vs Real:')
+    print(np.concatenate((test_prediction.eval(), test_output), axis=1)[0:100])
