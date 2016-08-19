@@ -13,7 +13,7 @@ def accuracy2(predictions, real_outputs):
     return np.sqrt( np.mean( np.square( np.log(predictions+1) - np.log(real_outputs+1))))
 
 nExamples = 5000000
-train_size = 30000
+train_size = 100000
 valid_size = 10000
 test_size = 20000
 
@@ -118,7 +118,7 @@ with tf.Session(graph=graph) as session:
             begin = time.time()
 
     print('Test accuracy:', accuracy2(test_prediction.eval(), test_output))
-    
+
     # Let's print some results: predictions vs real
     print('-----------')
     print('Prediction vs Real:')
