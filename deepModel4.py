@@ -12,8 +12,8 @@ def accuracy(predictions, real_outputs):
 def accuracy2(predictions, real_outputs):
     return np.sqrt( np.mean( np.square( np.log(predictions+1) - np.log(real_outputs+1))))
 
-nExamples = 100000
-train_size = 50000
+nExamples = 10000000
+train_size = 1000000
 valid_size = 10000
 test_size = 20000
 
@@ -39,15 +39,17 @@ beta2 = 0.0001
 beta3 = 0.0001
 beta4 = 0.0001
 beta5 = 0.0001
+# Batch size for SGD
+batch_size = 10000
 
 graph = tf.Graph()
 
 with graph.as_default():
 
     # Input data.
-    tf_train_dataset = tf.constant(train_dataset)
+    tf_train_dataset = tf.placeholder('float32', shape=(batch_size, features))
     # We only have one output, the prediction.
-    tf_train_outputs = tf.constant(train_output)
+    tf_train_outputs = tf.placeholder('float32', shape=(batch_size, 1))
     # The valid dataset and the test dataset remain as constants.
     tf_valid_dataset = tf.constant(valid_dataset)
     tf_test_dataset = tf.constant(test_dataset)
@@ -138,13 +140,24 @@ with tf.Session(graph=graph) as session:
 
     for step in range(num_steps):
 
-        alpha_feed = {tf_alpha : alpha1 + step*alpha2}
-        _, l, predictions = session.run([optimizer, loss, train_prediction], feed_dict=alpha_feed)
+        # Feed the alpha for Gradient descent
+        feed_alpha = alpha1 + step*alpha2
+
+        # Feed the tf_train_dataset
+        rows = np.random.choice(train_dataset.shape[0], size=batch_size, replace=False)
+        feed_train_dataset = train_dataset[rows, :]
+        feed_train_outputs = train_output[rows, :]
+
+        # Create the dict to feed the data
+        feed_dict = {tf_alpha : feed_alpha, tf_train_dataset : feed_train_dataset, tf_train_outputs : feed_train_outputs}
+
+        # Run one step
+        _, l, predictions = session.run([optimizer, loss, train_prediction], feed_dict=feed_dict)
 
         if (step % 10 == 0):
             print('-----------')
             print("Train loss at step %d: %f" % (step, l))
-            print('Train accuracy:', accuracy2(predictions, train_output))
+            print('Train accuracy:', accuracy2(predictions, feed_train_outputs))
             print('Validation accuracy:', accuracy2(valid_prediction.eval(), valid_output))
 
             print('Time (s):', time.time()-begin)
